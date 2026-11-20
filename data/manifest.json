@@ -1,16 +1,16 @@
 {
-  "version": 11,
-  "updatedAt": "2026-11-20T10:57:47Z",
-  "totalRecipes": 579,
-  "recipeCount": 300,
+  "version": 13,
+  "updatedAt": "2026-11-20T12:13:26Z",
+  "totalRecipes": 1253,
+  "recipeCount": 500,
   "feedUrl": "https://raw.githubusercontent.com/Outrot174/KitchenMasterRecipes/main/data/recipes_feed.json",
-  "sha256": "2d6fc3eee88d52b67287819c75801d4b68a9d609d22b19034f0ce2a063523c70",
+  "sha256": "967422ad2510cdc4e95bffcc350090eaf4b534df2e75f52003473cae7762db53",
   "chunks": [
     {
       "date": "2026-11-20",
       "url": "https://raw.githubusercontent.com/Outrot174/KitchenMasterRecipes/main/data/daily/2026-11-20.json",
-      "sha256": "2d0bca590f5fbd19f3277dfb25d48aa6c5c787ba19bfdca1517602ee66d010c5",
-      "count": 579
+      "sha256": "4dc3e71f71f47b07daeaac62913fb4d7e25c2425296b4fd16fc65053e3c5ef1d",
+      "count": 1253
     }
   ]
 }

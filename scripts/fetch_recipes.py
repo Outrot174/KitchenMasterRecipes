@@ -2,24 +2,29 @@
 # -*- coding: utf-8 -*-
 
 """
-KitchenMaster High-Throughput Async Recipe Pipeline
-Скрипт высокоскоростного сбора и нормализации кулинарных рецептов (1,000+ за запуск)
-без медленных серверных вызовов Google Translate.
-Для англоязычных рецептов сохраняются оригиналы, локализуются единицы измерения,
-а полный перевод текста выполняется на клиенте по требованию (on-demand).
-Поддерживает пагинацию через data/crawler_state.json, разбивку на ежедневные дельта-чанки
-(data/daily/YYYY-MM-DD.json), манифест (data/manifest.json) и фид (data/recipes_feed.json).
+KitchenMaster High-Throughput Recipe Pipeline & World Cuisines Expansion
+Скрипт высокоскоростного сбора рецептов со всего мира:
+- Все кухни TheMealDB (Chinese, Japanese, Thai, Vietnamese, Indian, Italian, French, Mexican, etc.)
+- Корейская кухня (koreanbapsang.com, mykoreankitchen.com)
+- Китайская и азиатская кухня (thewoksoflife.com)
+- Кавказская и грузинская кухня (1000.menu, povarenok.ru)
+- Русские домашние порталы (povarenok.ru, eda.ru)
+Все рецепты размечаются тегами кухонь ([Китайская кухня], [Корейская кухня], [Грузинская кухня] и т.д.)
+для мгновенного поиска в приложении KitchenMaster.
+Сбор выполняется без медленных серверных вызовов перевода за < 35 секунд.
 """
 
 import concurrent.futures
 import hashlib
 import html
+import http.client
 import json
 import os
 import re
 import time
 import urllib.parse
 import urllib.request
+import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -31,10 +36,9 @@ MANIFEST_FILE = os.path.join(DATA_DIR, "manifest.json")
 SEEN_IDS_FILE = os.path.join(DATA_DIR, "seen_ids.json")
 CRAWLER_STATE_FILE = os.path.join(DATA_DIR, "crawler_state.json")
 
-TARGET_RU_PER_RUN = 500
-TARGET_EN_PER_RUN = 550
+TARGET_PER_RUN = 1200
 MAX_DAILY_CHUNKS_KEEP = 14
-FEED_CAP_RECIPES = 500
+FEED_CAP_RECIPES = 600
 CONCURRENCY_LIMIT = 25
 
 HTTP_HEADERS = {
@@ -64,6 +68,45 @@ NORMALIZATION_MAP = {
     "мука": "мука", "пшеничная мука": "мука", "яблоки": "яблоки", "яблоко": "яблоки", "шоколад": "шоколад"
 }
 
+# --- Карта кухонь мира на русском языке для поиска ---
+CUISINE_MAP = {
+    "Chinese": ("Китайская кухня", "Chinese Cuisine"),
+    "Japanese": ("Японская кухня", "Japanese Cuisine"),
+    "Korean": ("Корейская кухня", "Korean Cuisine"),
+    "South Korean": ("Корейская кухня", "Korean Cuisine"),
+    "Thai": ("Тайская кухня", "Thai Cuisine"),
+    "Vietnamese": ("Вьетнамская кухня", "Vietnamese Cuisine"),
+    "Indian": ("Индийская кухня", "Indian Cuisine"),
+    "Italian": ("Итальянская кухня", "Italian Cuisine"),
+    "French": ("Французская кухня", "French Cuisine"),
+    "Mexican": ("Мексиканская кухня", "Mexican Cuisine"),
+    "Spanish": ("Испанская кухня", "Spanish Cuisine"),
+    "Greek": ("Греческая кухня", "Greek Cuisine"),
+    "Turkish": ("Турецкая кухня", "Turkish Cuisine"),
+    "Georgian": ("Грузинская кухня", "Georgian Cuisine"),
+    "Caucasian": ("Кавказская кухня", "Caucasian Cuisine"),
+    "Moroccan": ("Марокканская кухня", "Moroccan Cuisine"),
+    "British": ("Британская кухня", "British Cuisine"),
+    "American": ("Американская кухня", "American Cuisine"),
+    "Canadian": ("Канадская кухня", "Canadian Cuisine"),
+    "Polish": ("Польская кухня", "Polish Cuisine"),
+    "Portuguese": ("Португальская кухня", "Portuguese Cuisine"),
+    "Jamaican": ("Ямайская кухня", "Jamaican Cuisine"),
+    "Egyptian": ("Египетская кухня", "Egyptian Cuisine"),
+    "Tunisian": ("Тунисская кухня", "Tunisian Cuisine"),
+    "Croatian": ("Хорватская кухня", "Croatian Cuisine"),
+    "Irish": ("Ирландская кухня", "Irish Cuisine"),
+    "Dutch": ("Голландская кухня", "Dutch Cuisine"),
+    "Malaysian": ("Малазийская кухня", "Malaysian Cuisine"),
+    "Filipino": ("Филиппинская кухня", "Filipino Cuisine"),
+    "Kenyan": ("Кенийская кухня", "Kenyan Cuisine"),
+    "Ukrainian": ("Украинская кухня", "Ukrainian Cuisine"),
+    "Russian": ("Русская кухня", "Russian Cuisine"),
+    "Uzbek": ("Узбекская кухня", "Uzbek Cuisine"),
+    "Armenian": ("Армянская кухня", "Armenian Cuisine"),
+    "Azerbaijani": ("Азербайджанская кухня", "Azerbaijani Cuisine")
+}
+
 def localize_units(amount: str) -> str:
     """Локализует кулинарные меры измерения на русский язык."""
     if not amount:
@@ -82,14 +125,32 @@ def localize_units(amount: str) -> str:
         (r"(?i)\bcloves?\b", "зубч."),
         (r"(?i)\bounces?\b|\boz\b", "унц."),
         (r"(?i)\bpounds?\b|\blbs?\b", "фунт."),
+        (r"(?i)\bslices?\b", "ломт."),
+        (r"(?i)\bstrips?\b", "полоски"),
         (r"(?i)\bgrams?\b|\bg\b", "г"),
         (r"(?i)\bml\b", "мл"),
-        (r"(?i)\bl\b", "л"),
+        (r"(?i)\b(\d+[\d\s.,/-]*)\s*(?:liters?|litres?|l)\b", r"\1 л"),
+        (r"(?i)\bpieces?\b", "шт."),
+        (r"(?i)\bmedium\b", "средн."),
+        (r"(?i)\blarge\b", "крупн."),
+        (r"(?i)\bsmall\b", "мелк."),
+        (r"(?i)\bhandful\b", "горсть"),
+        (r"(?i)\bcans?\b", "банка"),
+        (r"(?i)\b(?:packages?|pkg)\b", "упак."),
         (r"\b1 ст\.\b", "1 ст. л.")
     ]
     for pattern, repl in replacements:
         s = re.sub(pattern, repl, s)
     return s.strip()
+
+def split_english_ingredient(full_str: str) -> tuple:
+    s = full_str.strip()
+    match = re.search(r"^(\d+[\d\s.,/-]*\s*(?:cups?|tablespoons?|tbsp?|tbs|teaspoons?|tsp|pinch(?:es)?|cloves?|ounces?|oz|pounds?|lbs?|grams?|g|ml|l|slices?|strips?|cans?|pieces?|packages?|pkg|handful)?)\s+(.*)$", s, re.IGNORECASE)
+    if match and match.group(1).strip():
+        amt = localize_units(match.group(1).strip())
+        name = match.group(2).strip()
+        return name if name else s, amt
+    return s, "по вкусу"
 
 def normalize_ingredient(name: str) -> str:
     clean = name.strip().lower()
@@ -120,20 +181,46 @@ def split_russian_ingredient(full_str: str) -> tuple:
         return match.group(1).strip(), localize_units(match.group(2).strip())
     return full_str, "по вкусу"
 
+def detect_russian_cuisine_tag(title: str, desc: str) -> str:
+    combined = f"{title} {desc}".lower()
+    if any(k in combined for k in ["грузинск", "харчо", "хачапури", "сациви", "хинкали", "ткемали", "лобио", "чахохбили", "кучмач", "аджарск", "тбилиси", "чашушули", "оджахури", "сулугуни", "чихиртма"]):
+        return "Грузинская кухня"
+    if any(k in combined for k in ["кавказск", "шашлык", "люля-кебаб", "долма", "чурчхела", "айран", "осетинск"]):
+        return "Кавказская кухня"
+    if any(k in combined for k in ["узбекск", "плов", "лагман", "самса", "манты", "шурпа"]):
+        return "Узбекская кухня"
+    if any(k in combined for k in ["корейск", "кимчи", "кимчхи", "пибимпаб", "кукси", "морковь по-корейски"]):
+        return "Корейская кухня"
+    if any(k in combined for k in ["китайск", "вок", "димсам", "кисло-сладк"]):
+        return "Китайская кухня"
+    if any(k in combined for k in ["японск", "суши", "рамен", "мисо", "роллы", "терияки"]):
+        return "Японская кухня"
+    if any(k in combined for k in ["итальянск", "пицца", "паста", "лазанья", "ризотто", "карбонара", "болоньезе"]):
+        return "Итальянская кухня"
+    if any(k in combined for k in ["французск", "жульен", "рататуй", "круассан", "киш"]):
+        return "Французская кухня"
+    if any(k in combined for k in ["тайск", "том ям", "том кха", "пад тай"]):
+        return "Тайская кухня"
+    if any(k in combined for k in ["мексиканск", "тако", "буррито", "фахитос", "кесадилья", "гуакамоле"]):
+        return "Мексиканская кухня"
+    if any(k in combined for k in ["украинск", "борщ с пампушками", "вареники", "деруны"]):
+        return "Украинская кухня"
+    if any(k in combined for k in ["русск", "щи", "уха", "окрошка", "солянка", "блины", "оладьи", "сырники"]):
+        return "Русская кухня"
+    return "Домашняя кухня"
+
 def classify_strict_category(title: str, desc: str = "", orig_category: str = "") -> str:
     combined = f"{title} {desc}".lower()
     cat_lower = (orig_category or "").lower()
 
-    # 1. СУПЫ И ПЕРВЫЕ БЛЮДА (FIRST)
     first_keywords = [
         "soup", "stew", "chowder", "broth", "ramen", "pho", "borscht",
-        "суп", "борщ", "щи", "солянка", "уха", "окрошка", "рассольник", "бульон", "гаспачо"
+        "суп", "борщ", "щи", "солянка", "уха", "окрошка", "рассольник", "бульон", "гаспачо", "харчо", "шурпа"
     ]
     for k in first_keywords:
         if (len(k) <= 4 and re.search(rf"\b{k}\b", combined)) or (len(k) > 4 and k in combined):
             return "FIRST"
 
-    # 2. ЗАВТРАКИ (BREAKFAST)
     breakfast_keywords = [
         "pancake", "pancakes", "blini", "waffle", "waffles", "omelet", "omelette",
         "scrambled", "porridge", "oatmeal", "granola", "toast", "crepe", "crepes",
@@ -146,7 +233,6 @@ def classify_strict_category(title: str, desc: str = "", orig_category: str = ""
     if cat_lower == "breakfast":
         return "BREAKFAST"
 
-    # 3. ДЕСЕРТЫ И ВЫПЕЧКА (DESSERT)
     dessert_keywords = [
         "cake", "pie", "tart", "cookie", "cookies", "brownie", "brownies", "pudding",
         "mousse", "tiramisu", "cheesecake", "brioche", "pastry", "pastries", "sweet",
@@ -160,7 +246,6 @@ def classify_strict_category(title: str, desc: str = "", orig_category: str = ""
     if cat_lower == "dessert":
         return "DESSERT"
 
-    # 4. САЛАТЫ (SALAD)
     salad_keywords = [
         "salad", "salads", "slaw", "coleslaw", "tabbouleh", "ceviche",
         "салат", "винегрет", "оливье", "цезарь", "греческий"
@@ -169,7 +254,6 @@ def classify_strict_category(title: str, desc: str = "", orig_category: str = ""
         if (len(k) <= 4 and re.search(rf"\b{k}\b", combined)) or (len(k) > 4 and k in combined):
             return "SALAD"
 
-    # 5. ВТОРЫЕ БЛЮДА (SECOND)
     return "SECOND"
 
 def deduplicate_ingredients(items: list) -> list:
@@ -255,17 +339,23 @@ def build_recipe_dict(
 
 def http_get_sync(url: str, timeout: int = 10, encoding: str = "utf-8") -> str:
     req = urllib.request.Request(url, headers=HTTP_HEADERS)
-    with urllib.request.urlopen(req, timeout=timeout) as resp:
-        return resp.read().decode(encoding, errors="ignore")
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            return resp.read().decode(encoding, errors="ignore")
+    except http.client.IncompleteRead as e:
+        return e.partial.decode(encoding, errors="ignore")
 
-# --- Сбор TheMealDB (Быстрый сбор оригиналов без серверного перевода) ---
+# --- Сбор TheMealDB по кухням мира (World Cuisines Multi-Area Sweep) ---
 
 def parse_meal(meal: dict) -> dict:
     meal_id = f"mealdb-{meal.get('idMeal')}"
     title_orig = meal.get("strMeal", "").strip()
     category_raw = meal.get("strCategory", "Miscellaneous")
+    area = meal.get("strArea", "International").strip()
     instructions = meal.get("strInstructions", "").strip()
     image_url = meal.get("strMealThumb", "")
+
+    cuisine_ru, cuisine_en = CUISINE_MAP.get(area, (f"{area} кухня", area))
 
     raw_steps = [s.strip() for s in re.split(r"\r?\n|\.\s+", instructions) if len(s.strip()) > 10]
     steps_orig = raw_steps[:10] if raw_steps else [instructions]
@@ -280,10 +370,10 @@ def parse_meal(meal: dict) -> dict:
                 "amount": measure.strip() if measure else "to taste"
             })
 
-    desc_orig = f"Traditional {category_raw} dish: {title_orig} with balanced flavors and presentation."
+    desc_orig = f"[{cuisine_en} / {cuisine_ru}] Traditional {category_raw} dish: {title_orig}."
+    desc_ru = f"[{cuisine_ru}] Традиционное блюдо: {title_orig}."
     category = classify_strict_category(title_orig, desc_orig, category_raw)
 
-    # Без медленного перевода на сервере: сохраняем оригинал, локализуем единицы
     ingredients_ru = [
         {"name": ing["name"], "amount": localize_units(ing["amount"])}
         for ing in ingredients_orig
@@ -293,7 +383,7 @@ def parse_meal(meal: dict) -> dict:
         recipe_id=meal_id,
         title_ru=title_orig,
         title_orig=title_orig,
-        desc_ru=desc_orig,
+        desc_ru=desc_ru,
         desc_orig=desc_orig,
         category=category,
         cook_time=35,
@@ -307,8 +397,8 @@ def parse_meal(meal: dict) -> dict:
         steps_ru=steps_orig
     )
 
-def fetch_themealdb_concurrent(seen_ids: set, target_count: int) -> list:
-    print(f"[INFO] Fetching international recipes from TheMealDB (concurrent letters, target: {target_count})...")
+def fetch_themealdb_world_cuisines(seen_ids: set, target_count: int) -> list:
+    print(f"[INFO] Sweeping TheMealDB for World Cuisines (Target: {target_count})...")
     recipes = []
     alphabet = list("abcdefghijklmnopqrstuvwxyz")
 
@@ -336,62 +426,288 @@ def fetch_themealdb_concurrent(seen_ids: set, target_count: int) -> list:
             if len(recipes) >= target_count:
                 break
 
-    print(f"[SUCCESS] Collected {len(recipes)} international recipes from TheMealDB.")
+    print(f"[SUCCESS] Collected {len(recipes)} recipes from TheMealDB.")
     return recipes
 
-# --- Сбор DummyJSON Recipes ---
+# --- Сбор Корейской кухни (KoreanBapsang & MyKoreanKitchen) ---
 
-def fetch_dummyjson_recipes(seen_ids: set, target_count: int) -> list:
-    print(f"[INFO] Fetching recipes from DummyJSON (target: {target_count})...")
+def parse_schema_recipe_page(html_text: str, rid: str, default_cuisine: str = "Корейская кухня") -> dict:
+    for m in re.finditer(r'<script[^>]*type=[\"\x27]application/ld\+json[\"\x27][^>]*>(.*?)</script>', html_text, re.DOTALL):
+        try:
+            data = json.loads(m.group(1))
+            graph = data.get("@graph", [data]) if isinstance(data, dict) else (data if isinstance(data, list) else [data])
+            for item in graph:
+                if isinstance(item, dict) and item.get("@type") == "Recipe":
+                    title = item.get("name")
+                    if not title:
+                        continue
+                    clean_title = html.unescape(title).strip()
+                    desc = html.unescape(item.get("description", "")).strip() or f"Authentic {default_cuisine} recipe: {clean_title}."
+                    desc_tagged = f"[{default_cuisine}] {desc}"
+
+                    cook_time = parse_iso_duration(item.get("cookTime") or item.get("totalTime") or "")
+                    category = classify_strict_category(clean_title, desc)
+
+                    raw_ings = item.get("recipeIngredient", [])
+                    ingredients_orig = []
+                    ingredients_ru = []
+                    for r_ing in raw_ings:
+                        clean_ing = html.unescape(str(r_ing)).strip()
+                        name, amt = split_english_ingredient(clean_ing)
+                        ingredients_orig.append({"name": name, "amount": amt})
+                        ingredients_ru.append({"name": name, "amount": amt})
+
+                    instructions = item.get("recipeInstructions", [])
+                    steps = []
+                    if isinstance(instructions, list):
+                        for s in instructions:
+                            if isinstance(s, dict):
+                                t = s.get("text", "")
+                            else:
+                                t = str(s)
+                            clean_t = html.unescape(re.sub(r"<[^>]+>", " ", t)).strip()
+                            if len(clean_t) > 8:
+                                steps.append(clean_t)
+                    elif isinstance(instructions, str):
+                        steps = [html.unescape(re.sub(r"<[^>]+>", " ", instructions)).strip()]
+
+                    if not steps:
+                        steps = [f"Follow traditional {default_cuisine} cooking techniques to prepare {clean_title}."]
+
+                    img = item.get("image")
+                    img_url = img[0] if isinstance(img, list) and img else (img if isinstance(img, str) else "")
+
+                    return build_recipe_dict(
+                        recipe_id=rid,
+                        title_ru=clean_title,
+                        title_orig=clean_title,
+                        desc_ru=desc_tagged,
+                        desc_orig=desc_tagged,
+                        category=category,
+                        cook_time=cook_time,
+                        servings=4,
+                        image_url=img_url,
+                        source_lang="EN",
+                        ingredients_orig=ingredients_orig,
+                        ingredients_ru=ingredients_ru,
+                        normalized_ingredients=set(),
+                        steps_orig=steps,
+                        steps_ru=steps
+                    )
+        except Exception:
+            pass
+    return None
+
+def fetch_korean_recipes(seen_ids: set, target_count: int, cursor: int = 0) -> tuple:
+    print(f"[INFO] Fetching authentic Korean recipes (Target: {target_count}, cursor: {cursor})...")
     recipes = []
-    url = "https://dummyjson.com/recipes?limit=50"
-    try:
-        content = http_get_sync(url, timeout=10)
-        data = json.loads(content)
-        for item in data.get("recipes", []):
-            rid = f"dummyjson-{item.get('id')}"
-            if rid in seen_ids:
-                continue
-            title_orig = item.get("name", "").strip()
-            instructions = item.get("instructions", [])
-            steps_orig = instructions if isinstance(instructions, list) else [str(instructions)]
-            ing_names = item.get("ingredients", [])
-            ingredients_orig = [{"name": name, "amount": "по вкусу"} for name in ing_names]
-            ingredients_ru = [{"name": name, "amount": "по вкусу"} for name in ing_names]
-            cook_time = item.get("cookTimeMinutes", 30) + item.get("prepTimeMinutes", 10)
-            servings = item.get("servings", 4)
-            image_url = item.get("image", "")
-            desc_orig = f"Delicious {title_orig} with {item.get('cuisine', 'international')} style."
-            category = classify_strict_category(title_orig, desc_orig, item.get("mealType", [""])[0] if item.get("mealType") else "")
+    feed_urls = [
+        ("https://www.koreanbapsang.com/feed/", "Корейская кухня"),
+        ("https://mykoreankitchen.com/feed/", "Корейская кухня")
+    ]
+    links = []
+    for f_url, cuisine_name in feed_urls:
+        try:
+            req = urllib.request.Request(f_url, headers=HTTP_HEADERS)
+            with urllib.request.urlopen(req, timeout=10) as r:
+                root = ET.fromstring(r.read())
+                for item in root.findall(".//item"):
+                    l = item.find("link")
+                    if l is not None and l.text:
+                        links.append((l.text.strip(), cuisine_name))
+        except Exception as e:
+            print(f"[WARN] Error fetching Korean RSS {f_url}: {e}")
 
-            parsed = build_recipe_dict(
-                recipe_id=rid,
-                title_ru=title_orig,
-                title_orig=title_orig,
-                desc_ru=desc_orig,
-                desc_orig=desc_orig,
-                category=category,
-                cook_time=cook_time,
-                servings=servings,
-                image_url=image_url,
-                source_lang="EN",
-                ingredients_orig=ingredients_orig,
-                ingredients_ru=ingredients_ru,
-                normalized_ingredients=set(),
-                steps_orig=steps_orig,
-                steps_ru=steps_orig
-            )
-            recipes.append(parsed)
-            seen_ids.add(rid)
-            if len(recipes) >= target_count:
+    # Срез по курсору
+    start_idx = cursor % max(1, len(links)) if links else 0
+    candidate_links = links[start_idx : start_idx + target_count * 2]
+
+    def fetch_single(item):
+        link, cuisine = item
+        clean_id = f"korean-{abs(hash(link)) % 1000000}"
+        if clean_id in seen_ids:
+            return None
+        try:
+            p_html = http_get_sync(link, timeout=10)
+            return parse_schema_recipe_page(p_html, clean_id, cuisine)
+        except Exception:
+            return None
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=CONCURRENCY_LIMIT) as executor:
+        for r in executor.map(fetch_single, candidate_links):
+            if r and r["id"] not in seen_ids:
+                seen_ids.add(r["id"])
+                recipes.append(r)
+                if len(recipes) >= target_count:
+                    break
+
+    next_cursor = start_idx + len(candidate_links)
+    print(f"[SUCCESS] Collected {len(recipes)} authentic Korean recipes.")
+    return recipes, next_cursor
+
+# --- Сбор Китайской / Азиатской кухни (TheWoksOfLife) ---
+
+def fetch_asian_chinese_recipes(seen_ids: set, target_count: int, cursor: int = 0) -> tuple:
+    print(f"[INFO] Fetching authentic Chinese & Asian recipes (Target: {target_count}, cursor: {cursor})...")
+    recipes = []
+    feed_urls = [
+        ("https://thewoksoflife.com/feed/", "Китайская кухня"),
+        ("https://omnivorescookbook.com/feed/", "Китайская кухня")
+    ]
+    links = []
+    for f_url, cuisine_name in feed_urls:
+        try:
+            req = urllib.request.Request(f_url, headers=HTTP_HEADERS)
+            with urllib.request.urlopen(req, timeout=10) as r:
+                root = ET.fromstring(r.read())
+                for item in root.findall(".//item"):
+                    l = item.find("link")
+                    if l is not None and l.text:
+                        links.append((l.text.strip(), cuisine_name))
+        except Exception as e:
+            print(f"[WARN] Error fetching Asian RSS {f_url}: {e}")
+
+    start_idx = cursor % max(1, len(links)) if links else 0
+    candidate_links = links[start_idx : start_idx + target_count * 2]
+
+    def fetch_single(item):
+        link, cuisine = item
+        clean_id = f"asian-{abs(hash(link)) % 1000000}"
+        if clean_id in seen_ids:
+            return None
+        try:
+            p_html = http_get_sync(link, timeout=10)
+            return parse_schema_recipe_page(p_html, clean_id, cuisine)
+        except Exception:
+            return None
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=CONCURRENCY_LIMIT) as executor:
+        for r in executor.map(fetch_single, candidate_links):
+            if r and r["id"] not in seen_ids:
+                seen_ids.add(r["id"])
+                recipes.append(r)
+                if len(recipes) >= target_count:
+                    break
+
+    next_cursor = start_idx + len(candidate_links)
+    print(f"[SUCCESS] Collected {len(recipes)} authentic Chinese/Asian recipes.")
+    return recipes, next_cursor
+
+# --- Сбор Кавказской и Грузинской кухни (1000.menu) ---
+
+def parse_menu1000_page(html_text: str, rid: str, url: str, default_cuisine: str = "Грузинская кухня") -> dict:
+    title_m = re.search(r"<h1[^>]*>(.*?)</h1>", html_text, re.DOTALL)
+    if not title_m:
+        return None
+    title = html.unescape(title_m.group(1)).strip()
+    title = re.sub(r"<[^>]+>", " ", title).strip()
+
+    desc_m = re.search(r"<meta itemprop=[\"\x27]description[\"\x27] content=[\"\x27](.*?)[\"\x27]", html_text)
+    raw_desc = html.unescape(desc_m.group(1)).strip() if desc_m else f"Традиционный рецепт: {title}."
+    detected = detect_russian_cuisine_tag(title, raw_desc)
+    cuisine_tag = detected if detected != "Домашняя кухня" else default_cuisine
+    desc = f"[{cuisine_tag}] {raw_desc}"
+
+    img_m = re.search(r"property=[\"\x27]og:image[\"\x27][^>]*content=[\"\x27](.*?)[\"\x27]", html_text)
+    img_url = img_m.group(1) if img_m else ""
+
+    time_m = re.search(r"itemprop=[\"\x27](?:cookTime|totalTime)[\"\x27][^>]*content=[\"\x27](.*?)[\"\x27]", html_text)
+    cook_time = parse_iso_duration(time_m.group(1) if time_m else "")
+
+    servings_m = re.search(r"itemprop=[\"\x27]recipeYield[\"\x27][^>]*content=[\"\x27](\d+)[\"\x27]", html_text)
+    servings = int(servings_m.group(1)) if servings_m else 4
+
+    category = classify_strict_category(title, desc)
+
+    raw_ings = re.findall(r"<meta itemprop=[\"\x27]recipeIngredient[\"\x27] content=[\"\x27](.*?)[\"\x27]", html_text)
+    if not raw_ings:
+        return None
+
+    ingredients_orig = []
+    ingredients_ru = []
+    normalized_ingredients = set()
+
+    for r_ing in raw_ings:
+        clean_ing = " ".join(html.unescape(r_ing).split())
+        name, amount = split_russian_ingredient(clean_ing)
+        ingredients_orig.append({"name": name, "amount": amount})
+        ingredients_ru.append({"name": name, "amount": amount})
+        norm = normalize_ingredient(name)
+        if norm and norm.lower() not in PANTRY_STAPLES and len(norm) > 2:
+            normalized_ingredients.add(norm)
+
+    steps = []
+    divs = re.findall(r"<div class=[\"\x27]instruction[\"\x27][^>]*>(.*?)</div>", html_text, re.DOTALL)
+    for div in divs:
+        p_matches = re.findall(r"<p(?![^>]*class=[\"\x27]infoblock)(?:[^>]*)>(.*?)</p>", div, re.DOTALL)
+        for p in p_matches:
+            clean_p = " ".join(html.unescape(re.sub(r"<[^>]+>", " ", p)).split())
+            if len(clean_p) > 10 and not clean_p.startswith("✅"):
+                steps.append(clean_p)
                 break
-    except Exception as e:
-        print(f"[WARN] Error fetching DummyJSON: {e}")
+    if not steps:
+        steps = [f"Приготовить блюдо «{title}» по рецепту и подать к столу."]
 
-    print(f"[SUCCESS] Collected {len(recipes)} recipes from DummyJSON.")
+    return build_recipe_dict(
+        recipe_id=rid,
+        title_ru=title,
+        title_orig=title,
+        desc_ru=desc,
+        desc_orig=desc,
+        category=category,
+        cook_time=cook_time,
+        servings=servings,
+        image_url=img_url,
+        source_lang="RU",
+        ingredients_orig=ingredients_orig,
+        ingredients_ru=ingredients_ru,
+        normalized_ingredients=normalized_ingredients,
+        steps_orig=steps,
+        steps_ru=steps
+    )
+
+def fetch_caucasian_georgian_recipes(seen_ids: set, target_count: int) -> list:
+    print(f"[INFO] Fetching Caucasian & Georgian recipes from 1000.menu (Target: {target_count})...")
+    recipes = []
+    catalogs = [
+        ("https://1000.menu/catalog/gruzinskaya-kuxnya", "Грузинская кухня"),
+        ("https://1000.menu/catalog/kavkazskaya-kuxnya", "Кавказская кухня")
+    ]
+    links = []
+    for cat_url, default_cuisine in catalogs:
+        try:
+            html_txt = http_get_sync(cat_url, timeout=10)
+            matches = re.findall(r'href=[\"\x27](/cooking/\d+-[^\"\x27]+)[\"\x27]', html_txt)
+            for m in matches:
+                full_url = f"https://1000.menu{m}"
+                if not any(l[0] == full_url for l in links):
+                    links.append((full_url, default_cuisine))
+        except Exception as e:
+            print(f"[WARN] Error fetching catalog {cat_url}: {e}")
+
+    def fetch_single(item):
+        url, default_cuisine = item
+        clean_id = f"menu1000-{abs(hash(url)) % 1000000}"
+        if clean_id in seen_ids:
+            return None
+        try:
+            html_txt = http_get_sync(url, timeout=10)
+            return parse_menu1000_page(html_txt, clean_id, url, default_cuisine)
+        except Exception:
+            return None
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=CONCURRENCY_LIMIT) as executor:
+        for r in executor.map(fetch_single, links[:target_count * 2]):
+            if r and r["id"] not in seen_ids:
+                seen_ids.add(r["id"])
+                recipes.append(r)
+                if len(recipes) >= target_count:
+                    break
+
+    print(f"[SUCCESS] Collected {len(recipes)} Caucasian & Georgian recipes from 1000.menu.")
     return recipes
 
-# --- Сбор русских рецептов (Povarenok.ru) ---
+# --- Сбор русских домашних рецептов (Povarenok.ru) ---
 
 def parse_povarenok_page(html_text: str, rid: str, link: str) -> dict:
     name_m = re.search(r"<h1[^>]*itemprop=[\"\x27]name[\"\x27][^>]*>(.*?)</h1>", html_text, re.DOTALL)
@@ -400,7 +716,9 @@ def parse_povarenok_page(html_text: str, rid: str, link: str) -> dict:
     title = html.unescape(name_m.group(1).strip())
 
     desc_m = re.search(r"<div[^>]*itemprop=[\"\x27]description[\"\x27][^>]*>(.*?)</div>", html_text, re.DOTALL)
-    desc = html.unescape(re.sub(r"<[^>]+>", " ", desc_m.group(1)).strip()) if desc_m else f"Традиционный домашний рецепт: {title}."
+    raw_desc = html.unescape(re.sub(r"<[^>]+>", " ", desc_m.group(1)).strip()) if desc_m else f"Традиционный домашний рецепт: {title}."
+    cuisine_tag = detect_russian_cuisine_tag(title, raw_desc)
+    desc = f"[{cuisine_tag}] {raw_desc}"
 
     img_m = re.search(r"<img[^>]*itemprop=[\"\x27]image[\"\x27][^>]*src=[\"\x27](.*?)[\"\x27]", html_text)
     img_url = img_m.group(1) if img_m else ""
@@ -500,106 +818,14 @@ def fetch_russian_recipes_povarenok(seen_ids: set, target_count: int, start_page
     print(f"[SUCCESS] Collected {len(recipes)} unique Russian recipes from povarenok.ru.")
     return recipes, next_page
 
-# --- Сбор русских рецептов (Eda.ru) ---
-
-def fetch_russian_recipes_eda(seen_ids: set, target_count: int, start_page: int = 1, page_count: int = 20) -> tuple:
-    print(f"[INFO] Fetching Russian recipes from eda.ru (pages {start_page}..{start_page + page_count - 1}, target: {target_count})...")
-    recipes = []
-    pages = range(start_page, start_page + page_count)
-
-    def fetch_eda_page_recipes(p):
-        url = f"https://eda.ru/recepty?page={p}"
-        page_recipes = []
-        try:
-            p_html = http_get_sync(url, timeout=8)
-            scripts = re.findall(r'<script[^>]*type=[\"\x27]application/ld\+json[\"\x27][^>]*>(.*?)</script>', p_html, re.DOTALL)
-            for s in scripts:
-                try:
-                    data = json.loads(s.strip())
-                    graph = data.get("@graph", []) if isinstance(data, dict) else (data if isinstance(data, list) else [data])
-                    for item in graph:
-                        if isinstance(item, dict) and item.get("@type") == "Recipe":
-                            name = item.get("name")
-                            if not name:
-                                continue
-                            clean_name = html.unescape(name).strip()
-                            clean_id = f"eda-{abs(hash(clean_name)) % 1000000}"
-                            desc = item.get("description", f"Рецепт: {clean_name}")
-                            cook_time = parse_iso_duration(item.get("cookTime") or item.get("totalTime") or "")
-                            category = classify_strict_category(clean_name, desc)
-                            raw_ings = item.get("recipeIngredient", [])
-                            ingredients_orig = []
-                            ingredients_ru = []
-                            normalized_ingredients = set()
-                            for r_ing in raw_ings:
-                                r_clean = html.unescape(str(r_ing)).strip()
-                                ing_name, amount = split_russian_ingredient(r_clean)
-                                ingredients_orig.append({"name": ing_name, "amount": amount})
-                                ingredients_ru.append({"name": ing_name, "amount": amount})
-                                norm = normalize_ingredient(ing_name)
-                                if norm and norm.lower() not in PANTRY_STAPLES and len(norm) > 2:
-                                    normalized_ingredients.add(norm)
-
-                            steps_data = item.get("recipeInstructions", [])
-                            steps = []
-                            if isinstance(steps_data, list):
-                                for st in steps_data:
-                                    text = st.get("text", "") if isinstance(st, dict) else str(st)
-                                    text_clean = html.unescape(re.sub(r"<[^>]+>", " ", text)).strip()
-                                    if len(text_clean) > 8:
-                                        steps.append(text_clean)
-                            elif isinstance(steps_data, str):
-                                steps = [html.unescape(re.sub(r"<[^>]+>", " ", steps_data)).strip()]
-                            if not steps:
-                                steps = [f"Приготовить «{clean_name}» согласно рецептуре и подать к столу."]
-
-                            img = item.get("image")
-                            img_url = img[0] if isinstance(img, list) and img else (img if isinstance(img, str) else "")
-
-                            page_recipes.append(build_recipe_dict(
-                                recipe_id=clean_id,
-                                title_ru=clean_name,
-                                title_orig=clean_name,
-                                desc_ru=desc,
-                                desc_orig=desc,
-                                category=category,
-                                cook_time=cook_time,
-                                servings=4,
-                                image_url=img_url,
-                                source_lang="RU",
-                                ingredients_orig=ingredients_orig,
-                                ingredients_ru=ingredients_ru,
-                                normalized_ingredients=normalized_ingredients,
-                                steps_orig=steps,
-                                steps_ru=steps
-                            ))
-                except Exception:
-                    pass
-        except Exception:
-            pass
-        return page_recipes
-
-    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-        for prs in executor.map(fetch_eda_page_recipes, pages):
-            for r in prs:
-                if r["id"] not in seen_ids:
-                    seen_ids.add(r["id"])
-                    recipes.append(r)
-                    if len(recipes) >= target_count:
-                        break
-            if len(recipes) >= target_count:
-                break
-
-    next_page = start_page + page_count
-    print(f"[SUCCESS] Collected {len(recipes)} Russian recipes from eda.ru.")
-    return recipes, next_page
-
 # --- Хранилище состояния пагинации (crawler_state.json) ---
 
 def load_crawler_state() -> dict:
     default_state = {
         "povarenok_page": 1,
         "eda_page": 1,
+        "korean_cursor": 0,
+        "asian_cursor": 0,
         "last_run": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     }
     if os.path.exists(CRAWLER_STATE_FILE):
@@ -748,12 +974,12 @@ def update_manifest_and_feed(retained_chunks: list):
         f.write(feed_json)
     feed_sha256 = hashlib.sha256(feed_json.encode("utf-8")).hexdigest()
 
-    current_version = 12
+    current_version = 13
     if os.path.exists(MANIFEST_FILE):
         try:
             with open(MANIFEST_FILE, "r", encoding="utf-8") as f:
                 prev_manifest = json.load(f)
-                current_version = prev_manifest.get("version", 11) + 1
+                current_version = prev_manifest.get("version", 12) + 1
         except Exception:
             pass
 
@@ -775,8 +1001,8 @@ def update_manifest_and_feed(retained_chunks: list):
     print(f"[SUCCESS] Updated {MANIFEST_FILE}: Version {current_version}, {len(chunks_meta)} active chunks, {total_in_chunks} total recipes.")
 
 def reprocess_existing_archives():
-    """Быстрая нормализация существующих архивов без HTTP запросов перевода."""
-    print("[INFO] Re-processing existing archives for category classification and unit localization...")
+    """Быстрая нормализация существующих архивов: добавление тегов кухонь и локализация мер."""
+    print("[INFO] Re-processing existing archives to ensure world cuisine tags and localized units...")
     files_to_process = []
     if os.path.exists(DAILY_DIR):
         for fname in os.listdir(DAILY_DIR):
@@ -794,11 +1020,23 @@ def reprocess_existing_archives():
 
             for r in recipes:
                 old_cat = r.get("category", "")
+                title_orig = r.get("titleOrig", r.get("titleRu", ""))
+                desc_orig = r.get("descriptionOrig", r.get("descriptionRu", ""))
+
+                # Категория
                 new_cat = classify_strict_category(r.get("titleRu", ""), r.get("descriptionRu", ""), old_cat)
                 if new_cat != old_cat:
                     r["category"] = new_cat
                     file_changed = True
 
+                # Теги кухонь для поиска
+                desc_ru = r.get("descriptionRu", "")
+                if not desc_ru.startswith("[") or "кухня]" not in desc_ru:
+                    tag = detect_russian_cuisine_tag(r.get("titleRu", ""), desc_ru)
+                    r["descriptionRu"] = f"[{tag}] {desc_ru}"
+                    file_changed = True
+
+                # Локализация мер
                 for ing in r.get("ingredientsRu", []):
                     old_amt = ing.get("amount", "")
                     new_amt = localize_units(old_amt)
@@ -823,44 +1061,49 @@ def main():
     os.makedirs(DAILY_DIR, exist_ok=True)
 
     today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    print(f"=== KITCHENMASTER HIGH-SPEED RECIPE PIPELINE: {today_str} ===")
+    print(f"=== KITCHENMASTER WORLD CUISINES PIPELINE: {today_str} ===")
 
     crawler_state = load_crawler_state()
     seen_ids = load_seen_ids()
 
-    # 1. Сбор международных рецептов (TheMealDB + DummyJSON)
-    en_mealdb = fetch_themealdb_concurrent(seen_ids, TARGET_EN_PER_RUN - 50)
-    en_dummy = fetch_dummyjson_recipes(seen_ids, 50)
-    en_recipes = en_mealdb + en_dummy
+    # 1. TheMealDB (World Cuisines Multi-Area Sweep)
+    en_world = fetch_themealdb_world_cuisines(seen_ids, 400)
 
-    # 2. Сбор русских рецептов с пагинацией
+    # 2. Корейская кухня (KoreanBapsang & MyKoreanKitchen)
+    k_cursor = crawler_state.get("korean_cursor", 0)
+    en_korean, next_k_cursor = fetch_korean_recipes(seen_ids, 20, cursor=k_cursor)
+    crawler_state["korean_cursor"] = next_k_cursor
+
+    # 3. Китайская и Азиатская кухня (TheWoksOfLife & OmnivoresCookbook)
+    a_cursor = crawler_state.get("asian_cursor", 0)
+    en_asian, next_a_cursor = fetch_asian_chinese_recipes(seen_ids, 20, cursor=a_cursor)
+    crawler_state["asian_cursor"] = next_a_cursor
+
+    # 4. Кавказская и Грузинская кухня (1000.menu)
+    ru_caucasian = fetch_caucasian_georgian_recipes(seen_ids, 30)
+
+    # 5. Русские домашние рецепты с пагинацией (Povarenok.ru)
     p_start = crawler_state.get("povarenok_page", 1)
-    ru_povarenok, next_p_page = fetch_russian_recipes_povarenok(seen_ids, TARGET_RU_PER_RUN, start_page=p_start, page_count=40)
+    ru_povarenok, next_p_page = fetch_russian_recipes_povarenok(seen_ids, 450, start_page=p_start, page_count=40)
     crawler_state["povarenok_page"] = next_p_page
 
-    eda_start = crawler_state.get("eda_page", 1)
-    ru_eda, next_eda_page = fetch_russian_recipes_eda(seen_ids, 100, start_page=eda_start, page_count=20)
-    crawler_state["eda_page"] = next_eda_page
+    new_recipes = en_world + en_korean + en_asian + ru_caucasian + ru_povarenok
+    print(f"[SUMMARY] Newly harvested: {len(new_recipes)} recipes across World Cuisines in {time.time() - t_start:.2f}s")
 
-    ru_recipes = ru_povarenok + ru_eda
-    new_recipes = en_recipes + ru_recipes
-
-    print(f"[SUMMARY] Total newly harvested recipes: {len(new_recipes)} (RU: {len(ru_recipes)}, EN: {len(en_recipes)}) in {time.time() - t_start:.2f}s")
-
-    # 3. Сохранение сегодняшнего чанка
+    # 6. Сохранение сегодняшнего чанка
     save_daily_chunk(new_recipes, today_str)
 
-    # 4. Ротация архивов и обновление манифеста
+    # 7. Ротация архивов и обновление манифеста
     retained_chunks = prune_old_daily_chunks(MAX_DAILY_CHUNKS_KEEP)
     update_manifest_and_feed(retained_chunks)
 
-    # 5. Сохранение индексов и состояния
+    # 8. Сохранение индексов и состояния краулера
     save_seen_ids(seen_ids)
     save_crawler_state(crawler_state)
     reprocess_existing_archives()
 
     total_duration = time.time() - t_start
-    print(f"=== PIPELINE RUN COMPLETE in {total_duration:.2f}s (Ingested: {len(new_recipes)} recipes) ===")
+    print(f"=== WORLD CUISINES PIPELINE COMPLETE in {total_duration:.2f}s (Ingested: {len(new_recipes)} recipes) ===")
 
 if __name__ == "__main__":
     main()

@@ -71082,7 +71082,7 @@
     ]
   },
   {
-    "id": "korean-55649",
+    "id": "korean-658654",
     "titleRu": "Kimchi Fried Rice",
     "titleOrig": "Kimchi Fried Rice",
     "descriptionRu": "[Корейская кухня] Learn the basic techniques for perfect kimchi fried rice with this easy, adaptable recipe. Just toss in your favorite protein and watch it become your new go-to meal!",
@@ -71257,7 +71257,7 @@
     ]
   },
   {
-    "id": "korean-255745",
+    "id": "korean-67927",
     "titleRu": "Jatjuk (Pine Nut Porridge)",
     "titleOrig": "Jatjuk (Pine Nut Porridge)",
     "descriptionRu": "[Корейская кухня] Made with finely ground rice and pine nuts, jatjuk (잣죽) is a nutritious porridge that's creamy, delicately nutty, and comforting!",
@@ -71337,7 +71337,7 @@
     ]
   },
   {
-    "id": "korean-115604",
+    "id": "korean-107126",
     "titleRu": "Kkakdugi (Cubed Radish Kimchi)",
     "titleOrig": "Kkakdugi (Cubed Radish Kimchi)",
     "descriptionRu": "[Корейская кухня] Crunchy, spicy, and deeply savory, kkakdugi is a highly popular Korean radish kimchi. And easy to make!",
@@ -71494,7 +71494,7 @@
     ]
   },
   {
-    "id": "korean-363706",
+    "id": "korean-528556",
     "titleRu": "LA Galbi (Korean BBQ Short Ribs)",
     "titleOrig": "LA Galbi (Korean BBQ Short Ribs)",
     "descriptionRu": "[Корейская кухня] Make the best LA Galbi (Korean BBQ short ribs) at home using my tried-and-tested recipe for the perfect galbi marinade. It’s best to grill the marinated beef short ribs over charcoal, but a gas grill or a grill pan heated on the stove top works well too.",
@@ -71631,7 +71631,7 @@
     "allergens": []
   },
   {
-    "id": "korean-440919",
+    "id": "korean-742530",
     "titleRu": "Sundubu Gyeran Guk (Soft tofu and egg soup)",
     "titleOrig": "Sundubu Gyeran Guk (Soft tofu and egg soup)",
     "descriptionRu": "[Корейская кухня] A delicious and healthy breakfast soup made with sundubu and eggs",
@@ -71749,7 +71749,7 @@
     ]
   },
   {
-    "id": "korean-511707",
+    "id": "korean-905398",
     "titleRu": "Kimbap (Seaweed rice rolls)",
     "titleOrig": "Kimbap (Seaweed rice rolls)",
     "descriptionRu": "[Корейская кухня] Kimbap is Korea's most popular on-the-go meal! Learn how to make the classic version with this recipe with a step-by-step guide!",
@@ -71937,7 +71937,7 @@
     ]
   },
   {
-    "id": "korean-261215",
+    "id": "korean-19454",
     "titleRu": "Gochu doenjang muchim (green chili peppers seasoned with doenjang)",
     "titleOrig": "Gochu doenjang muchim (green chili peppers seasoned with doenjang)",
     "descriptionRu": "[Корейская кухня] Fresh green chili peppers seasoned with doenjang make for a simple summer side dish that goes especially well with Korean BBQ.",
@@ -72022,7 +72022,7 @@
     "allergens": []
   },
   {
-    "id": "korean-977692",
+    "id": "korean-424189",
     "titleRu": "Kimchi Jjim (Braised Kimchi)",
     "titleOrig": "Kimchi Jjim (Braised Kimchi)",
     "descriptionRu": "[Корейская кухня] Kimchi jjim (or kimchijjim) is a kimchi dish that's slow-braised in a small amount of liquid. It's typically made with pork. You can also use beef or omit the meat.",
@@ -72125,7 +72125,184 @@
     "allergens": []
   },
   {
-    "id": "asian-168459",
+    "id": "asian-492119",
+    "titleRu": "Szechuan Chicken",
+    "titleOrig": "Szechuan Chicken",
+    "descriptionRu": "[Китайская кухня] This Szechuan Chicken offers the best of both worlds: Chinese-American takeout style in spirit, with a couple upgrades using authentic Sichuan ingredients!",
+    "descriptionOrig": "[Китайская кухня] This Szechuan Chicken offers the best of both worlds: Chinese-American takeout style in spirit, with a couple upgrades using authentic Sichuan ingredients!",
+    "category": "SECOND",
+    "cookTimeMinutes": 10,
+    "servings": 4,
+    "imageUrl": "https://thewoksoflife.com/wp-content/uploads/2026/07/szechuan-chicken-13.jpg",
+    "sourceLang": "EN",
+    "isFavorite": false,
+    "ingredientsRu": [
+      {
+        "name": "boneless chicken thighs ((or chicken breast))",
+        "amount": "1 фунт."
+      },
+      {
+        "name": "water",
+        "amount": "1  ст. л."
+      },
+      {
+        "name": "cornstarch",
+        "amount": "2  ч. л."
+      },
+      {
+        "name": "soy sauce",
+        "amount": "2  ч. л."
+      },
+      {
+        "name": "oil",
+        "amount": "2  ч. л."
+      },
+      {
+        "name": "3½ tablespoons neutral oil ((divided))",
+        "amount": "по вкусу"
+      },
+      {
+        "name": "whole dried chili peppers ((optional; break a few of them open to increase the spice level))",
+        "amount": "7"
+      },
+      {
+        "name": "minced ginger",
+        "amount": "2  ч. л."
+      },
+      {
+        "name": "½ teaspoon Sichuan peppercorn powder ((or 1 teaspoon Sichuan peppercorn oil / 1 teaspoon whole Sichuan peppercorns))",
+        "amount": "по вкусу"
+      },
+      {
+        "name": "chopped garlic ((about 3 cloves, divided))",
+        "amount": "1  ст. л."
+      },
+      {
+        "name": "2½ teaspoons spicy bean paste ((辣豆瓣酱 - là dòubàn jiàng))",
+        "amount": "по вкусу"
+      },
+      {
+        "name": "chili garlic sauce (（can substitute sambal oelek, Sriracha, chili oil, or chili crisp）)",
+        "amount": "1  ч. л."
+      },
+      {
+        "name": "½ cup red bell peppers ((cut into 1-inch/2.5cm pieces）)",
+        "amount": "по вкусу"
+      },
+      {
+        "name": "½ cup green bell peppers ((cut into 1-inch/2.5cm pieces）)",
+        "amount": "по вкусу"
+      },
+      {
+        "name": "jalapeno pepper ((optional to increase spice level; chopped))",
+        "amount": "1"
+      },
+      {
+        "name": "sugar",
+        "amount": "1  ч. л."
+      },
+      {
+        "name": "Shaoxing wine",
+        "amount": "1  ст. л."
+      },
+      {
+        "name": "scallion ((chopped))",
+        "amount": "1"
+      }
+    ],
+    "ingredientsOrig": [
+      {
+        "name": "boneless chicken thighs ((or chicken breast))",
+        "amount": "1 фунт."
+      },
+      {
+        "name": "water",
+        "amount": "1  ст. л."
+      },
+      {
+        "name": "cornstarch",
+        "amount": "2  ч. л."
+      },
+      {
+        "name": "soy sauce",
+        "amount": "2  ч. л."
+      },
+      {
+        "name": "oil",
+        "amount": "2  ч. л."
+      },
+      {
+        "name": "3½ tablespoons neutral oil ((divided))",
+        "amount": "по вкусу"
+      },
+      {
+        "name": "whole dried chili peppers ((optional; break a few of them open to increase the spice level))",
+        "amount": "7"
+      },
+      {
+        "name": "minced ginger",
+        "amount": "2  ч. л."
+      },
+      {
+        "name": "½ teaspoon Sichuan peppercorn powder ((or 1 teaspoon Sichuan peppercorn oil / 1 teaspoon whole Sichuan peppercorns))",
+        "amount": "по вкусу"
+      },
+      {
+        "name": "chopped garlic ((about 3 cloves, divided))",
+        "amount": "1  ст. л."
+      },
+      {
+        "name": "2½ teaspoons spicy bean paste ((辣豆瓣酱 - là dòubàn jiàng))",
+        "amount": "по вкусу"
+      },
+      {
+        "name": "chili garlic sauce (（can substitute sambal oelek, Sriracha, chili oil, or chili crisp）)",
+        "amount": "1  ч. л."
+      },
+      {
+        "name": "½ cup red bell peppers ((cut into 1-inch/2.5cm pieces）)",
+        "amount": "по вкусу"
+      },
+      {
+        "name": "½ cup green bell peppers ((cut into 1-inch/2.5cm pieces）)",
+        "amount": "по вкусу"
+      },
+      {
+        "name": "jalapeno pepper ((optional to increase spice level; chopped))",
+        "amount": "1"
+      },
+      {
+        "name": "sugar",
+        "amount": "1  ч. л."
+      },
+      {
+        "name": "Shaoxing wine",
+        "amount": "1  ст. л."
+      },
+      {
+        "name": "scallion ((chopped))",
+        "amount": "1"
+      }
+    ],
+    "normalizedIngredients": [],
+    "stepsRu": [
+      "Cut the chicken into small bite-size pieces, about 1-inch/2.5cm chunks. Add the chicken to a bowl with the water, cornstarch, soy sauce, and oil.",
+      "Heat your wok over medium-high heat until it’s just lightly smoking. Add 2 tablespoons of oil and swirl it around to coat. Add the chicken in one layer and sear for 30-60 seconds. Flip the chicken with your wok spatula. It should be nicely browned. Let it sear for another 30-60 seconds, then stir-fry until there are no more visible raw spots. It should be about 80% cooked through. Transfer the chicken back to the marinating bowl and reduce the heat to low.",
+      "Add the remaining 1½ tablespoons of oil, the dried chili peppers, and ginger. If using whole Sichuan peppercorns instead of powder, add them now. Stir for 10-20 seconds to infuse the oil. Add half the chopped garlic, and cook for 10 seconds or so. Stir in the spicy bean paste and chili garlic sauce until the oil turns bright red, 10-20 seconds. Keep the heat low so the aromatics don’t burn.",
+      "Add the bell peppers and jalapeno (if using). Increase the heat to high and stir fry everything for about 20 seconds. Add the chicken along with any juices from the bowl, the Sichuan peppercorn powder/oil (unless you already added whole peppercorns), and the sugar. Give everything a quick stir. Add the Shaoxing wine around the perimeter of the wok to deglaze it.",
+      "Stir everything together, pushing the ingredients along the sides of the wok to get some good wok hei. Finally, add the remaining garlic and scallion, and stir-fry for another 30 seconds. Transfer everything to a plate and serve with plenty of rice!"
+    ],
+    "stepsOrig": [
+      "Cut the chicken into small bite-size pieces, about 1-inch/2.5cm chunks. Add the chicken to a bowl with the water, cornstarch, soy sauce, and oil.",
+      "Heat your wok over medium-high heat until it’s just lightly smoking. Add 2 tablespoons of oil and swirl it around to coat. Add the chicken in one layer and sear for 30-60 seconds. Flip the chicken with your wok spatula. It should be nicely browned. Let it sear for another 30-60 seconds, then stir-fry until there are no more visible raw spots. It should be about 80% cooked through. Transfer the chicken back to the marinating bowl and reduce the heat to low.",
+      "Add the remaining 1½ tablespoons of oil, the dried chili peppers, and ginger. If using whole Sichuan peppercorns instead of powder, add them now. Stir for 10-20 seconds to infuse the oil. Add half the chopped garlic, and cook for 10 seconds or so. Stir in the spicy bean paste and chili garlic sauce until the oil turns bright red, 10-20 seconds. Keep the heat low so the aromatics don’t burn.",
+      "Add the bell peppers and jalapeno (if using). Increase the heat to high and stir fry everything for about 20 seconds. Add the chicken along with any juices from the bowl, the Sichuan peppercorn powder/oil (unless you already added whole peppercorns), and the sugar. Give everything a quick stir. Add the Shaoxing wine around the perimeter of the wok to deglaze it.",
+      "Stir everything together, pushing the ingredients along the sides of the wok to get some good wok hei. Finally, add the remaining garlic and scallion, and stir-fry for another 30 seconds. Transfer everything to a plate and serve with plenty of rice!"
+    ],
+    "allergens": []
+  },
+  {
+    "id": "asian-753031",
     "titleRu": "Miso Salmon",
     "titleOrig": "Miso Salmon",
     "descriptionRu": "[Китайская кухня] This Miso Salmon is unfussy to make, but restaurant-quality in flavor, with a light sweetness and lots of savory umami. We bet it makes it into your rotation of salmon recipes!",
@@ -72214,7 +72391,7 @@
     ]
   },
   {
-    "id": "asian-62019",
+    "id": "asian-111480",
     "titleRu": "Sesame Shrimp",
     "titleOrig": "Sesame Shrimp",
     "descriptionRu": "[Китайская кухня] This Sesame Shrimp recipe is reminiscent of everyone’s favorite Chinese takeout sesame chicken—with light and crunchy fried shrimp instead!",
@@ -72407,7 +72584,7 @@
     ]
   },
   {
-    "id": "asian-646509",
+    "id": "asian-321270",
     "titleRu": "Veggie Cream Cheese",
     "titleOrig": "Veggie Cream Cheese",
     "descriptionRu": "[Китайская кухня] This Veggie Cream Cheese tastes like it came from the best bagel shop in town—a mostly classic recipe with a couple special ingredients that set it apart!",
@@ -72491,7 +72668,7 @@
     ]
   },
   {
-    "id": "asian-393100",
+    "id": "asian-808354",
     "titleRu": "Steak with Soy Sauce",
     "titleOrig": "Steak with Soy Sauce",
     "descriptionRu": "[Китайская кухня] This steak with soy sauce is one of those non-recipe recipes that seems silly to share, but we have to! It's our favorite way to eat steak!",
@@ -72546,7 +72723,7 @@
     "allergens": []
   },
   {
-    "id": "asian-795735",
+    "id": "asian-416995",
     "titleRu": "Philly Cheesesteak Egg Rolls",
     "titleOrig": "Philly Cheesesteak Egg Rolls",
     "descriptionRu": "[Китайская кухня] These Philly Cheesesteak Egg Rolls live up to the hype, with no shortage of melty cheese, sweet onions, and beef!",
@@ -72678,7 +72855,7 @@
     ]
   },
   {
-    "id": "asian-434082",
+    "id": "asian-441222",
     "titleRu": "Steamed Egg with Shrimp & Tofu",
     "titleOrig": "Steamed Egg with Shrimp & Tofu",
     "descriptionRu": "[Китайская кухня] This Steamed Egg with Shrimp and Tofu recipe is an easy and soothing way to get more protein into your diet. It's delicious served over rice!",
@@ -72786,7 +72963,7 @@
     ]
   },
   {
-    "id": "asian-165409",
+    "id": "asian-508292",
     "titleRu": "Tom Yum Noodle Soup",
     "titleOrig": "Tom Yum Noodle Soup",
     "descriptionRu": "[Китайская кухня] Tom Yum Noodle Soup is a hearty, tangy, delicious Thai noodle soup that’s surprisingly simple to put together.",
@@ -72950,7 +73127,7 @@
     ]
   },
   {
-    "id": "asian-356498",
+    "id": "asian-127269",
     "titleRu": "Mustard Green Soup (芥菜肉片汤)",
     "titleOrig": "Mustard Green Soup (芥菜肉片汤)",
     "descriptionRu": "[Китайская кухня] Make this Cantonese Mustard Green Soup recipe in under 30 minutes, offering health benefits without the hassle of simmering soup for hours!",
@@ -73095,7 +73272,7 @@
     ]
   },
   {
-    "id": "asian-234401",
+    "id": "asian-476288",
     "titleRu": "Whole Wheat Pancakes",
     "titleOrig": "Whole Wheat Pancakes",
     "descriptionRu": "[Китайская кухня] This delicious, healthy whole wheat pancake recipe uses 100% whole wheat flour without sacrificing texture, flavor, or fluffiness!",
@@ -73210,128 +73387,7 @@
     ]
   },
   {
-    "id": "asian-101284",
-    "titleRu": "Fennel and Orange Salad",
-    "titleOrig": "Fennel and Orange Salad",
-    "descriptionRu": "[Китайская кухня] This crunchy, light fennel and orange salad is crunchy, refreshing, and aromatic, making a great side dish for light and hearty dishes alike!",
-    "descriptionOrig": "[Китайская кухня] This crunchy, light fennel and orange salad is crunchy, refreshing, and aromatic, making a great side dish for light and hearty dishes alike!",
-    "category": "SALAD",
-    "cookTimeMinutes": 35,
-    "servings": 4,
-    "imageUrl": "https://thewoksoflife.com/wp-content/uploads/2026/06/fennel-orange-salad-20.jpg",
-    "sourceLang": "EN",
-    "isFavorite": false,
-    "ingredientsRu": [
-      {
-        "name": "large fennel bulbs ((about 1.5 pounds/680g))",
-        "amount": "2"
-      },
-      {
-        "name": "fresh parsley ((chopped))",
-        "amount": "2  ст. л."
-      },
-      {
-        "name": "¼ cup fennel fronds ((roughly chopped))",
-        "amount": "по вкусу"
-      },
-      {
-        "name": "½ small red onion ((very thinly sliced))",
-        "amount": "по вкусу"
-      },
-      {
-        "name": "medium oranges ((12 oz./350g orange wedges after peeling; you can also use canned mandarin oranges))",
-        "amount": "4"
-      },
-      {
-        "name": "Juice of 1 lemon",
-        "amount": "по вкусу"
-      },
-      {
-        "name": "¼ cup extra-virgin olive oil",
-        "amount": "по вкусу"
-      },
-      {
-        "name": "¼ - ½ cup castelvetrano olives ((seeded and halved; optional, to taste))",
-        "amount": "по вкусу"
-      },
-      {
-        "name": "castelvetrano olive brine ((optional))",
-        "amount": "2-3  ст. л."
-      },
-      {
-        "name": "¾ teaspoon sea salt",
-        "amount": "по вкусу"
-      },
-      {
-        "name": "Freshly ground black pepper ((to taste))",
-        "amount": "по вкусу"
-      }
-    ],
-    "ingredientsOrig": [
-      {
-        "name": "large fennel bulbs ((about 1.5 pounds/680g))",
-        "amount": "2"
-      },
-      {
-        "name": "fresh parsley ((chopped))",
-        "amount": "2  ст. л."
-      },
-      {
-        "name": "¼ cup fennel fronds ((roughly chopped))",
-        "amount": "по вкусу"
-      },
-      {
-        "name": "½ small red onion ((very thinly sliced))",
-        "amount": "по вкусу"
-      },
-      {
-        "name": "medium oranges ((12 oz./350g orange wedges after peeling; you can also use canned mandarin oranges))",
-        "amount": "4"
-      },
-      {
-        "name": "Juice of 1 lemon",
-        "amount": "по вкусу"
-      },
-      {
-        "name": "¼ cup extra-virgin olive oil",
-        "amount": "по вкусу"
-      },
-      {
-        "name": "¼ - ½ cup castelvetrano olives ((seeded and halved; optional, to taste))",
-        "amount": "по вкусу"
-      },
-      {
-        "name": "castelvetrano olive brine ((optional))",
-        "amount": "2-3  ст. л."
-      },
-      {
-        "name": "¾ teaspoon sea salt",
-        "amount": "по вкусу"
-      },
-      {
-        "name": "Freshly ground black pepper ((to taste))",
-        "amount": "по вкусу"
-      }
-    ],
-    "normalizedIngredients": [],
-    "stepsRu": [
-      "Trim the green stems off the fennel bulbs, leaving just the white/light green base. Cut in half from end to end, and remove the core. Cut the fennel bulbs into quarters and wash thoroughly. Pat dry.",
-      "Use a mandolin or sharp knife to thinly shave the fennel, and transfer it to a large bowl. Add the parsley, the fennel fronds, and red onion.",
-      "Next, supreme the oranges. Slice the ends off of each orange. Place flat-side-down on a cutting board, and run your knife in a curve around the sides of the orange to cut away the peel, just far enough into the orange to remove the pith Hold the orange in your palm with your fingers out of the way. Cut the slices of orange out between the membranes, letting the orange segments drop into the bowl of fennel. Take the orange “skeleton” and squeeze any remaining juice into the fennel bowl. Repeat with all four oranges.",
-      "Add the lemon juice, extra virgin olive oil, olives and olive juice (if using), and salt and pepper to taste.",
-      "Stir to combine, cover, and transfer to the fridge to chill for at least 30 minutes before serving (or up to a few hours)."
-    ],
-    "stepsOrig": [
-      "Trim the green stems off the fennel bulbs, leaving just the white/light green base. Cut in half from end to end, and remove the core. Cut the fennel bulbs into quarters and wash thoroughly. Pat dry.",
-      "Use a mandolin or sharp knife to thinly shave the fennel, and transfer it to a large bowl. Add the parsley, the fennel fronds, and red onion.",
-      "Next, supreme the oranges. Slice the ends off of each orange. Place flat-side-down on a cutting board, and run your knife in a curve around the sides of the orange to cut away the peel, just far enough into the orange to remove the pith Hold the orange in your palm with your fingers out of the way. Cut the slices of orange out between the membranes, letting the orange segments drop into the bowl of fennel. Take the orange “skeleton” and squeeze any remaining juice into the fennel bowl. Repeat with all four oranges.",
-      "Add the lemon juice, extra virgin olive oil, olives and olive juice (if using), and salt and pepper to taste.",
-      "Stir to combine, cover, and transfer to the fridge to chill for at least 30 minutes before serving (or up to a few hours)."
-    ],
-    "allergens": []
-  },
-  {
-    "id": "asian-613417",
+    "id": "asian-147593",
     "titleRu": "Black Sesame Shortbread with Dark Chocolate",
     "titleOrig": "Black Sesame Shortbread with Dark Chocolate",
     "descriptionRu": "[Китайская кухня] These black sesame shortbread cookies are buttery, crisp, and crumbly, with a super nutty taste from toasted black sesame seeds. I dip each one halfway in dark chocolate, then finish with flaky sea salt and a scatter of extra sesame. These are some of the most decadent desserts or snacks you can easily make for your family and friends or share as gifts for the holidays.",
@@ -73430,7 +73486,7 @@
     ]
   },
   {
-    "id": "asian-477201",
+    "id": "asian-795237",
     "titleRu": "Winter Melon Stir Fry",
     "titleOrig": "Winter Melon Stir Fry",
     "descriptionRu": "[Китайская кухня] This Winter melon stir fry is a quick homestyle side where mild winter melon takes on the savory flavor of papery dried shrimp, a little garlic, and a touch of mushroom powder. It is a gluten free dish that takes 15 minutes to put on my table and is the perfect side dish to add texture, flavor, and nutrition to your meals.",
@@ -73560,7 +73616,7 @@
     ]
   },
   {
-    "id": "asian-500746",
+    "id": "asian-458321",
     "titleRu": "Leftover Ham Fried Rice with Pineapple",
     "titleOrig": "Leftover Ham Fried Rice with Pineapple",
     "descriptionRu": "[Китайская кухня] This easy leftover ham fried rice with pineapple recipe is my quick way to use up holiday ham, cold day-old rice, and a few eggs in one skillet. The diced ham caramelizes with sweet pineapple and a splash of pineapple juice stirred into the soy sauce, and it is ready in 25 minutes.",
@@ -73680,7 +73736,7 @@
     ]
   },
   {
-    "id": "asian-741442",
+    "id": "asian-528630",
     "titleRu": "Authentic Mapo Tofu (麻婆豆腐)",
     "titleOrig": "Authentic Mapo Tofu (麻婆豆腐)",
     "descriptionRu": "[Китайская кухня] This authentic mapo tofu braises soft tofu in a spicy savory Sichuan sauce made from doubanjiang, Sichuan peppercorns, and a little ground pork. It is a quick Sichuan main that is ready in 30 minutes and tastes like the version I grew up eating in China. I serve it over steamed rice for a quick, delicious, and healthy weekday dinner!",
@@ -73833,7 +73889,7 @@
     ]
   },
   {
-    "id": "asian-276686",
+    "id": "asian-553978",
     "titleRu": "Hainanese Chicken Rice (海南鸡饭)",
     "titleOrig": "Hainanese Chicken Rice (海南鸡饭)",
     "descriptionRu": "[Китайская кухня] This Hainanese chicken rice is a restaurant-style meal of tender poached chicken, jasmine rice cooked in chicken fat and broth, and two homemade dipping sauces. I make the whole plate at home with a simple poaching method and a rice cooker, no complicated techniques required.",
@@ -74026,7 +74082,7 @@
     "allergens": []
   },
   {
-    "id": "asian-474219",
+    "id": "asian-235762",
     "titleRu": "Chinese Sauteed Potato (Cumin Chili Home Fries)",
     "titleOrig": "Chinese Sauteed Potato (Cumin Chili Home Fries)",
     "descriptionRu": "[Китайская кухня] This Chinese sauteed potato is my cumin chili home fries, russet potato cut into cubes and pan fried with cumin, Chinese chili flakes, and ground Sichuan peppercorn. I boil the pieces first so the inside stays tender, then crisp them in peanut oil with garlic and green onion. I love that I can put this irresistible breakfast on the table in just 20 minutes.",
@@ -74123,7 +74179,7 @@
     ]
   },
   {
-    "id": "asian-158535",
+    "id": "asian-627129",
     "titleRu": "Sichuan Dry Fried Green Beans (干煸四季豆)",
     "titleOrig": "Sichuan Dry Fried Green Beans (干煸四季豆)",
     "descriptionRu": "[Китайская кухня] These Sichuan dry fried green beans are cooked until blistered, wrinkled, and smoky, then tossed with ground pork, pickled mustard greens, and ground Sichuan peppercorns. This savory Sichuan side dish comes together in just 30 minutes, and the beautifully browned green beans give it that authentic restaurant-style flavor I love.",
@@ -74254,7 +74310,7 @@
     ]
   },
   {
-    "id": "asian-899750",
+    "id": "asian-220649",
     "titleRu": "Shacha Seafood Stir Fry",
     "titleOrig": "Shacha Seafood Stir Fry",
     "descriptionRu": "[Китайская кухня] My Shacha Seafood Stir Fry Recipe is one of the most delicious and easiest dinners I've made for my family lately! It combines tender shrimp, squid, and crisp bok choy, all coated in a savory shacha sauce with just a few pantry seasonings. This quick one-pan Chinese dish is packed with rich umami flavor, and my family and I just can't get enough of it.",
@@ -74390,7 +74446,7 @@
     ]
   },
   {
-    "id": "asian-83747",
+    "id": "asian-322354",
     "titleRu": "Lo Mai Gai (荷叶糯米鸡)",
     "titleOrig": "Lo Mai Gai (荷叶糯米鸡)",
     "descriptionRu": "[Китайская кухня] Lo Mai Gai is a classic Cantonese dim sum dish I love making with savory chicken, shiitake mushrooms, and dried shrimp folded into glutinous rice, wrapped in lotus leaves, and steamed until tender. The rice drinks up the rich sauce and the earthy scent of the leaf as it cooks, giving you a deeply savory parcel that reheats as well as it serves fresh.",
@@ -74547,7 +74603,7 @@
     ]
   },
   {
-    "id": "asian-528735",
+    "id": "asian-605675",
     "titleRu": "Curry Ramen with Leftover Ham",
     "titleOrig": "Curry Ramen with Leftover Ham",
     "descriptionRu": "[Китайская кухня] I love making this curry ramen when I have leftover ham in the fridge and just 15 minutes to put dinner on the table. I simmer instant noodles in a quick curry broth made with coconut milk and chicken broth, then add some baby bok choy. It’s a great way to use up leftover holiday ham, and the best part is how versatile it is! You can easily customize it with ingredients you already have in your pantry.",
@@ -74676,7 +74732,7 @@
     ]
   },
   {
-    "id": "menu1000-50533",
+    "id": "menu1000-270525",
     "titleRu": "Салат Тбилиси классический с говядиной",
     "titleOrig": "Салат Тбилиси классический с говядиной",
     "descriptionRu": "[Грузинская кухня] Яркий, сытный, вкусный - создаст неповторимую атмосферу!",
@@ -74815,7 +74871,7 @@
     ]
   },
   {
-    "id": "menu1000-970920",
+    "id": "menu1000-816804",
     "titleRu": "Салат с хрустящими баклажанами и помидорами по грузински",
     "titleOrig": "Салат с хрустящими баклажанами и помидорами по грузински",
     "descriptionRu": "[Грузинская кухня] Вкусный и красивый, как в ресторане - любовь с первой ложки!",
@@ -74972,7 +75028,7 @@
     ]
   },
   {
-    "id": "menu1000-403751",
+    "id": "menu1000-818101",
     "titleRu": "Классический чахохбили из курицы по грузински на сковороде",
     "titleOrig": "Классический чахохбили из курицы по грузински на сковороде",
     "descriptionRu": "[Грузинская кухня] Томлёный лук и сок овощей дарят сочность. Пряный, сытный.",
@@ -75101,7 +75157,7 @@
     "allergens": []
   },
   {
-    "id": "menu1000-104505",
+    "id": "menu1000-681763",
     "titleRu": "Суп Харчо классический с рисом",
     "titleOrig": "Суп Харчо классический с рисом",
     "descriptionRu": "[Грузинская кухня] Густой, пряный, ароматный - отличный обед для холодного дня!",
@@ -75261,7 +75317,7 @@
     "allergens": []
   },
   {
-    "id": "menu1000-402548",
+    "id": "menu1000-68418",
     "titleRu": "Чашушули по грузински из говядины",
     "titleOrig": "Чашушули по грузински из говядины",
     "descriptionRu": "[Грузинская кухня] Потрясающе вкусное, ароматное, пикантное. Пальчики оближешь!",
@@ -75434,7 +75490,7 @@
     "allergens": []
   },
   {
-    "id": "menu1000-968421",
+    "id": "menu1000-371164",
     "titleRu": "Салат Тбилиси говядина красная фасоль болгарский перец",
     "titleOrig": "Салат Тбилиси говядина красная фасоль болгарский перец",
     "descriptionRu": "[Грузинская кухня] Настоящая жемчужина национальной грузинской кухни!",
